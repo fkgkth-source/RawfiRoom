@@ -1,0 +1,13 @@
+# Render Blueprint: GitHub main 브랜치에 푸시할 때마다 자동 배포
+services:
+  - type: web
+    name: rawfiroom
+    runtime: node
+    plan: free            # 무료: 15분 미사용 시 잠듦, 디스크 비영구. 기록 보존은 starter + disk 권장
+    buildCommand: npm ci
+    startCommand: node server.js
+    autoDeploy: true
+    healthCheckPath: /api/config
+    envVars:
+      - key: NODE_VERSION
+        value: "20"

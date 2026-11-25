@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <title>RawfiRoom</title>
+  <meta name="description" content="RawfiRoom — 온라인 작곡·기타 레슨과 합주: 고음질 저지연 오디오, 실시간 건반·악보 필기·가사 공동 편집">
+  <meta name="theme-color" content="#0d0d10">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="RawfiRoom">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.svg">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <!-- 랜딩: 모드 선택 -->
+  <div id="landing" class="landing" hidden>
+    <div class="landing-card">
+      <div class="brand-mark"><img src="/icon.svg" alt="" width="56" height="56"></div>
+      <h1>RawfiRoom</h1>
+      <p class="muted">작곡·기타 레슨과 합주를 위한 온라인 스튜디오</p>
+      <div class="mode-cards">
+        <section class="mode-card">
+          <div class="mode-tag">선생님 모드</div>
+          <h2>레슨룸 열기</h2>
+          <p class="muted small">레슨생을 초대하고 Logic Pro·필기 권한·페이지를 주도해요.</p>
+          <button class="btn primary lg" data-create="lesson">레슨룸 만들기</button>
+        </section>
+        <section class="mode-card">
+          <div class="mode-tag">레슨생 모드</div>
+          <h2>레슨 참여하기</h2>
+          <p class="muted small">선생님에게 받은 초대 링크나 코드로 들어가요.</p>
+          <form id="joinForm" class="join-form">
+            <input id="joinCode" class="input" placeholder="초대 링크 또는 코드" autocomplete="off" autocapitalize="off">
+            <button class="btn lg">참여하기</button>
+          </form>
+        </section>
+        <section class="mode-card">
+          <div class="mode-tag">합주 모드</div>
+          <h2>합주방 만들기</h2>
+          <p class="muted small">최저 지연 설정, 동기 메트로놈, 마디 싱크로 함께 연주해요.</p>
+          <button class="btn primary lg" data-create="jam">합주방 만들기</button>
+        </section>
+        <section class="mode-card">
+          <div class="mode-tag">미팅 모드</div>
+          <h2>작업 미팅 열기</h2>
+          <p class="muted small">모두 같은 권한으로 화면 공유·가사·파일을 함께 작업해요.</p>
+          <button class="btn primary lg" data-create="meeting">미팅 열기</button>
+        </section>
+      </div>
+      <div id="myRooms" class="my-rooms"></div>
+    </div>
+  </div>
+
+  <!-- 입장 전 -->
+  <div id="prejoin" class="prejoin" hidden>
+    <div class="pj-card">
+      <div id="pjVideoWrap" class="pj-video">
+        <video id="pjVideo" autoplay playsinline muted></video>
+        <div class="pj-novideo">카메라 꺼짐</div>
+        <div class="pj-ctrls">
+          <button type="button" id="pjMic" class="round-btn" aria-label="마이크"></button>
+          <button type="button" id="pjCam" class="round-btn" aria-label="카메라"></button>
+        </div>
+      </div>
+      <form id="pjForm" class="pj-form">
+        <div class="muted small">RawfiRoom <b id="pjCode"></b></div>
+        <div id="pjModeSel" class="mode-pick">
+          <button type="button" class="mode-opt" data-mode="teacher"><b>선생님</b><span>레슨 진행</span></button>
+          <button type="button" class="mode-opt" data-mode="student"><b>레슨생</b><span>레슨 참여</span></button>
+          <button type="button" class="mode-opt" data-mode="jam"><b>합주</b><span>최저 지연</span></button>
+          <button type="button" class="mode-opt" data-mode="meeting"><b>미팅</b><span>함께 작업</span></button>
+        </div>
+        <h2 id="pjRole"></h2>
+        <p id="pjRoleDesc" class="muted small"></p>
+        <label class="field"><span class="field-label">이름</span>
+          <input id="pjName" class="input lg" maxlength="30" placeholder="이름을 입력하세요" autocomplete="name"></label>
+        <button class="btn primary lg" id="pjEnter">입장하기</button>
+        <p id="pjMsg" class="muted small"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- 룸 -->
+  <div id="room" class="room" hidden>
+    <header class="topbar">
+      <div class="tb-left">
+        <img src="/icon.svg" alt="" width="26" height="26">
+        <span class="brand-name">RawfiRoom</span>
+        <button class="mode-badge" id="modeBadge" title="모드 바꾸기"></button>
+        <span class="rec-badge" id="recBadge" hidden>● REC</span>
+        <span class="conn-dot" id="connDot"></span>
+      </div>
+      <div class="people" id="people"></div>
+      <div class="tb-right">
+        <button class="btn sm rec-btn" id="btnRec"></button>
+        <button class="btn sm teacher-only lesson-only" id="btnTeacherTools"></button>
+        <button class="btn sm student-only" id="btnHand"></button>
+        <button class="btn sm" id="btnInvite"></button>
+        <button class="btn sm danger-ghost" id="btnLeave">나가기</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="stage" id="stage">
+        <div class="stage-main" id="stageMain"></div>
+        <div class="stage-strip" id="stageStrip"></div>
+        <div class="waiting" id="waiting">
+          <p id="waitingText">상대를 기다리는 중…</p>
+          <button class="btn sm primary" id="waitingInvite">초대 링크 보내기</button>
+        </div>
+        <div class="controls">
+          <button class="ctrl" id="btnMic" title="마이크"></button>
+          <button class="ctrl" id="btnCam" title="카메라"></button>
+          <button class="ctrl" id="btnScreen" title="화면 공유"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></button>
+          <button class="ctrl" id="btnReqScreen" title="레슨생 화면 요청" hidden><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4M12 13V7M9 10l3 3 3-3"/></svg></button>
+          <button class="ctrl" id="btnFocus" title="탭 크게"></button>
+        </div>
+      </section>
+      <div class="gutter" id="gutter" title="드래그해서 크기 조절 (더블클릭: 기본값)"></div>
+      <section class="panel">
+        <nav class="tabs" id="tabs" role="tablist"></nav>
+        <div class="tab-body" id="tabBody"></div>
+      </section>
+    </main>
+
+    <footer class="dock" id="dock">
+      <div class="dock-bar" id="dockBar"></div>
+      <div class="dock-body">
+        <div id="keyboard"></div>
+        <div id="fretboard" hidden></div>
+      </div>
+    </footer>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <dialog id="dlg" class="dlg"></dialog>
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>

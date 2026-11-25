@@ -1,0 +1,15 @@
+{
+  "name": "rawfiroom",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RawfiRoom — 온라인 작곡·기타 레슨 (WebRTC + 실시간 공동 편집)",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "ws": "^8.18.0",
+    "yjs": "13.6.20"
+  }
+}
